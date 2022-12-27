@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require ('path');
+const { v4: uuidv4 } = require('uuid');
 
 const dataRoute = require('./src/routes/data');
 const usersRoute = require('./src/routes/users')

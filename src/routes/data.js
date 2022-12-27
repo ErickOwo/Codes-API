@@ -2,6 +2,10 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 
+
+const fs = require('fs-extra')
+const { addImage } = require('../utils/use-media');
+
 // models
 const User = require('../models/user');
 
@@ -12,7 +16,7 @@ router.post('/add', async (req, res) => {
   const decode = jwt.decode(token);
   const user = await User.findOne({ email: decode.email });
 
-  const data = req.body 
+  const data = req.body;
 
   for(let i; i < user.data.length; i++){
     if(data.code == user.data[i]) {
@@ -22,6 +26,11 @@ router.post('/add', async (req, res) => {
       return res.send({error: true, message: 'Objeto ya existente'})
     }
   }
+
+  const result = await addImage(req.file.path, 'Codes App/public');
+
+  data.imgURL = result.url;
+  data.public_id = result.public_id;
 
   if(user.data || !(user.data.length != 0)) await User.findByIdAndUpdate(user._id, {
     data: [...user.data, data]
@@ -35,7 +44,7 @@ router.post('/add', async (req, res) => {
     runValidators: true,
   });
 
-  
+  await fs.unlink(req.file.path);
   res.send({error: false, message: 'Objeto agregado con exito'});
 })
 
