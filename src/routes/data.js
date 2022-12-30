@@ -27,10 +27,15 @@ router.post('/add', async (req, res) => {
     }
   }
 
-  const result = await addImage(req.file.path, 'Codes App/public');
+  let result;
 
-  data.imgURL = result.url;
-  data.public_id = result.public_id;
+  if(req.file.path) {
+    result = await addImage(req.file.path, 'Codes App/public');
+    
+    data.imgURL = result.url;
+    data.public_id = result.public_id;
+  } 
+
 
   if(user.data || !(user.data.length != 0)) await User.findByIdAndUpdate(user._id, {
     data: [...user.data, data]
@@ -44,7 +49,7 @@ router.post('/add', async (req, res) => {
     runValidators: true,
   });
 
-  await fs.unlink(req.file.path);
+  if(req.file.path) await fs.unlink(req.file.path);
   res.send({error: false, message: 'Objeto agregado con exito'});
 })
 
@@ -56,6 +61,22 @@ router.get('/', async (req, res)=>{
   const user = await User.findOne({ email: decode.email });
 
   res.send(user.data)
+})
+
+router.patch('/update/:id',async (req, res)=> {
+  const token = req.header('Authorization');
+  const id = req.params.id;
+
+  if(!token) return res.status(401).json({message: 'Usuario no autenticado', type: 'error'});
+  
+  const decode = jwt.decode(token);
+  const user = await User.findOne({ email: decode.email });
+
+  const data = req.body;
+
+  console.log(data)
+
+  res.send({error: true, message: 'reading request'})
 })
 
 module.exports = router;
