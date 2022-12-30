@@ -1,10 +1,11 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
+const { v4: uuidv4 } = require('uuid');
 
 
 const fs = require('fs-extra')
-const { addImage } = require('../utils/use-media');
+const { addImage, deleteImage } = require('../utils/use-media');
 
 // models
 const User = require('../models/user');
@@ -17,6 +18,8 @@ router.post('/add', async (req, res) => {
   const user = await User.findOne({ email: decode.email });
 
   const data = req.body;
+
+  data.id = uuidv4()
 
   for(let i; i < user.data.length; i++){
     if(data.code == user.data[i]) {
@@ -71,12 +74,41 @@ router.patch('/update/:id',async (req, res)=> {
   
   const decode = jwt.decode(token);
   const user = await User.findOne({ email: decode.email });
-
+  
   const data = req.body;
+  if(req.file) {
+    result = await addImage(req.file.path, 'Codes App/public');
 
-  console.log(data)
+    if(data.public_id) {
+      deleteImage(data.public_id)
+    }
+    
+    data.imgURL = result.url;
+    data.public_id = result.public_id;
+  } 
 
-  res.send({error: true, message: 'reading request'})
+
+  const array = user.data.map(item => {
+    if (!item.id && data.title == item.title || data.code == item.code) {
+      
+      data.id = uuidv4()
+      return data
+    } else if (data.id && item.id == data.id) {
+      return data
+    }
+    return item
+  })
+
+  await User.findByIdAndUpdate(user._id, {
+    data: array
+  }, {
+    new: true,
+    runValidators: true,
+  });
+
+  if(req.file) await fs.unlink(req.file.path);
+
+  res.send({error: false, message: 'Obejeto modificado con éxito'})
 })
 
 module.exports = router;
