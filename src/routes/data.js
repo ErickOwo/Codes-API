@@ -29,7 +29,7 @@ router.post('/add', async (req, res) => {
 
   let result;
 
-  if(req.file.path) {
+  if(req.file) {
     result = await addImage(req.file.path, 'Codes App/public');
     
     data.imgURL = result.url;
@@ -49,7 +49,7 @@ router.post('/add', async (req, res) => {
     runValidators: true,
   });
 
-  if(req.file.path) await fs.unlink(req.file.path);
+  if(req.file) await fs.unlink(req.file.path);
   res.send({error: false, message: 'Objeto agregado con exito'});
 })
 
