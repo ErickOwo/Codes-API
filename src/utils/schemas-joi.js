@@ -4,6 +4,7 @@ const Joi = require('@hapi/joi');
 const schemaRegisterUser = Joi.object({
   name: Joi.string().min(3).max(460).required(),
   email: Joi.string().min(6).max(260).required().email(),
+  phone: Joi.string().min(8).max(60).required(),
   password: Joi.string().min(8).max(2048).required(),
 });
 const schemaLoginUser = Joi.object({

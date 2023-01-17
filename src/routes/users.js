@@ -22,11 +22,11 @@ router.get('/profile', async (req, res)=>{
   }
 });
 
-router.post('/', async (req, res)=>{
+router.post('/signup', async (req, res)=>{
   try {
     const { error } = schemaRegisterUser.validate(req.body);
     if(error) return res.status(400).json({ error: error.details[0].message });
-
+    
     const isEmailExist = await User.findOne({ email: req.body.email });
     if(isEmailExist) return res.status(400).json({ error: 'Correo electrónico ya registrado' });
 
